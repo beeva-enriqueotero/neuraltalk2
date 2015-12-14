@@ -8,7 +8,7 @@ local utils = require 'misc.utils'
 require 'lfs'
 require 'image'
 
-local DataLoaderRaw = torch.class('DataLoaderRawSequence')
+local DataLoaderRaw = torch.class('DataLoaderRaw')
 
 function DataLoaderRaw:__init(opt)
   local coco_json = utils.getopt(opt, 'coco_json', '')
@@ -41,11 +41,15 @@ function DataLoaderRaw:__init(opt)
       return false
     end
     local n = 1
-    for file in paths.files(opt.folder_path, isImage) do
-      local fullpath = path.join(opt.folder_path, file)
-      table.insert(self.files, fullpath)
-      table.insert(self.ids, tostring(n)) -- just order them sequentially
-      n=n+1
+    mytable = paths.dir(opt.folder_path)
+    table.sort(mytable)
+    for k,file in pairs(mytable) do
+      if (isImage(file)) then
+        local fullpath = path.join(opt.folder_path, file)
+        table.insert(self.files, fullpath)
+        table.insert(self.ids, tostring(n)) -- just order them sequentially
+        n=n+1
+      end
     end
   end
 
