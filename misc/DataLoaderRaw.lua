@@ -8,7 +8,7 @@ local utils = require 'misc.utils'
 require 'lfs'
 require 'image'
 
-local DataLoaderRaw = torch.class('DataLoaderRawSequence')
+local DataLoaderRaw = torch.class('DataLoaderRaw')
 
 function DataLoaderRaw:__init(opt)
   local coco_json = utils.getopt(opt, 'coco_json', '')

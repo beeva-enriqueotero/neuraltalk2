@@ -6,7 +6,7 @@ require 'loadcaffe'
 -- local imports
 local utils = require 'misc.utils'
 require 'misc.DataLoader'
-require 'misc.DataLoaderRaw'
+require 'misc.DataLoaderRawSequence'
 require 'misc.LanguageModel'
 local net_utils = require 'misc.net_utils'
 
@@ -84,7 +84,7 @@ local loader
 if string.len(opt.image_folder) == 0 then
   loader = DataLoader{h5_file = opt.input_h5, json_file = opt.input_json}
 else
-  loader = DataLoaderRaw{folder_path = opt.image_folder, coco_json = opt.coco_json}
+  loader = DataLoaderRawSequence{folder_path = opt.image_folder, coco_json = opt.coco_json}
 end
 
 -------------------------------------------------------------------------------
