@@ -8,13 +8,13 @@ local utils = require 'misc.utils'
 require 'lfs'
 require 'image'
 
-local DataLoaderRaw = torch.class('DataLoaderRaw')
+local DataLoaderRaw = torch.class('DataLoaderRawSequence')
 
 function DataLoaderRaw:__init(opt)
   local coco_json = utils.getopt(opt, 'coco_json', '')
 
   -- load the json file which contains additional information about the dataset
-  print('DataLoaderRaw loading images from folder: ', opt.folder_path)
+  print('DataLoaderRawSequence loading images from folder: ', opt.folder_path)
 
   self.files = {}
   self.ids = {}

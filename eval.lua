@@ -7,6 +7,7 @@ require 'loadcaffe'
 local utils = require 'misc.utils'
 require 'misc.DataLoader'
 require 'misc.DataLoaderRaw'
+require 'misc.DataLoaderRawSequence'
 require 'misc.LanguageModel'
 local net_utils = require 'misc.net_utils'
 
@@ -45,6 +46,8 @@ cmd:option('-backend', 'cudnn', 'nn|cudnn')
 cmd:option('-id', 'evalscript', 'an id identifying this run/job. used only if language_eval = 1 for appending to intermediate files')
 cmd:option('-seed', 123, 'random number generator seed to use')
 cmd:option('-gpuid', 0, 'which gpu to use. -1 = use CPU')
+cmd:option('-seq', 0, '0 = random (original behaviour). 1 = ordered sequence')
+cmd:option('-custom_threshold', 0.0, '0.0 = no filter (original behaviour). -1.6 = recommended value')
 cmd:text()
 
 -------------------------------------------------------------------------------
@@ -84,7 +87,17 @@ local loader
 if string.len(opt.image_folder) == 0 then
   loader = DataLoader{h5_file = opt.input_h5, json_file = opt.input_json}
 else
-  loader = DataLoaderRaw{folder_path = opt.image_folder, coco_json = opt.coco_json}
+  if opt.seq == 1 then 
+    loader = DataLoaderRawSequence{folder_path = opt.image_folder, coco_json = opt.coco_json}
+  else
+    loader = DataLoaderRaw{folder_path = opt.image_folder, coco_json = opt.coco_json}
+  end
+end
+
+-- Custom Treshold for captions
+local custom_threshold = 0
+if (opt.custom_threshold) then
+  custom_threshold = opt.custom_threshold
 end
 
 -------------------------------------------------------------------------------
@@ -132,9 +145,13 @@ local function eval_split(split, evalopt)
 
     -- forward the model to also get generated samples for each image
     local sample_opts = { sample_max = opt.sample_max, beam_size = opt.beam_size, temperature = opt.temperature }
-    local seq = protos.lm:sample(feats, sample_opts)
+    local seq,logprob = protos.lm:sample(feats, sample_opts)
+    custom_score = torch.kthvalue(logprob,3,1):mean()
     local sents = net_utils.decode_sequence(vocab, seq)
     for k=1,#sents do
+      if (custom_score > custom_threshold) then
+        sents[k] = "..."
+      end
       local entry = {image_id = data.infos[k].id, caption = sents[k]}
       if opt.dump_path == 1 then
         entry.file_name = data.infos[k].file_path
