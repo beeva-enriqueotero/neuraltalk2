@@ -95,7 +95,7 @@ else
 end
 
 -- Custom Treshold for captions
-custom_threshold = 0
+local custom_threshold = 0
 if (opt.custom_threshold) then
   custom_threshold = opt.custom_threshold
 end
