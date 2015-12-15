@@ -6,6 +6,7 @@ require 'loadcaffe'
 -- local imports
 local utils = require 'misc.utils'
 require 'misc.DataLoader'
+require 'misc.DataLoaderRaw'
 require 'misc.DataLoaderRawSequence'
 require 'misc.LanguageModel'
 local net_utils = require 'misc.net_utils'
@@ -45,6 +46,7 @@ cmd:option('-backend', 'cudnn', 'nn|cudnn')
 cmd:option('-id', 'evalscript', 'an id identifying this run/job. used only if language_eval = 1 for appending to intermediate files')
 cmd:option('-seed', 123, 'random number generator seed to use')
 cmd:option('-gpuid', 0, 'which gpu to use. -1 = use CPU')
+cmd:option('-seq', 0, '0 = random (original behaviour). 1 = ordered sequence')
 cmd:text()
 
 -------------------------------------------------------------------------------
@@ -84,7 +86,11 @@ local loader
 if string.len(opt.image_folder) == 0 then
   loader = DataLoader{h5_file = opt.input_h5, json_file = opt.input_json}
 else
-  loader = DataLoaderRawSequence{folder_path = opt.image_folder, coco_json = opt.coco_json}
+  if opt.seq == 1 then 
+    loader = DataLoaderRawSequence{folder_path = opt.image_folder, coco_json = opt.coco_json}
+  else
+    loader = DataLoaderRaw{folder_path = opt.image_folder, coco_json = opt.coco_json}
+  end
 end
 
 -------------------------------------------------------------------------------
